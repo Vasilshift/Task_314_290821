@@ -1,8 +1,12 @@
 package com.example.vasil;
 
+import com.example.vasil.model.User;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -13,7 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Arrays;
 
 @SpringBootApplication
-public class SpringRestClient {
+public class SpringRestClient extends SpringBootServletInitializer {
 
 	private static final String GET_USERS_ENDPOINT_URL = "http://localhost:8080/api/users";
 	private static final String GET_USER_ENDPOINT_URL = "http://localhost:8080/api/users/{id}";
@@ -21,6 +25,9 @@ public class SpringRestClient {
 	private static final String UPDATE_USER_ENDPOINT_URL = "http://localhost:8080/api/users/{id}";
 	private static final String DELETE_USER_ENDPOINT_URL = "http://localhost:8080/api/users/{id}";
 	private static RestTemplate restTemplate = new RestTemplate();
+
+
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpringRestClient.class, args);
@@ -43,6 +50,16 @@ public class SpringRestClient {
 //		springRestClient.deleteEmployee();
 	}
 
+	//ResponseEntity<String> forEntity = restTemplate.getForEntity("http://91.241.64.178:7081/api/users", String.class);
+	//forEntity.getHeaders().get("Set-Cookie").stream().forEach(System.out::println);
+
+	//User user = restTemplate.getForObject("http://graph.facebook.com/pivotalsoftware", User.class);
+
+
+	@Override
+	protected final SpringApplicationBuilder configure(final SpringApplicationBuilder application) {
+		return application.sources(SpringRestClient.class);
+	}
 
 	private void getUsers() {
 
