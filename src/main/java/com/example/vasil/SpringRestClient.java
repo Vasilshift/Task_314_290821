@@ -7,70 +7,69 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @SpringBootApplication
 public class SpringRestClient extends SpringBootServletInitializer {
 
-	private static final String GET_USERS_ENDPOINT_URL = "http://localhost:8080/api/users";
-	private static final String GET_USER_ENDPOINT_URL = "http://localhost:8080/api/users/{id}";
-	private static final String CREATE_USER_ENDPOINT_URL = "http://localhost:8080/api/users";
-	private static final String UPDATE_USER_ENDPOINT_URL = "http://localhost:8080/api/users/{id}";
-	private static final String DELETE_USER_ENDPOINT_URL = "http://localhost:8080/api/users/{id}";
-	private static RestTemplate restTemplate = new RestTemplate();
-
-
-
-
 	public static void main(String[] args) {
+		
 		SpringApplication.run(SpringRestClient.class, args);
 
-		SpringRestClient springRestClient = new SpringRestClient();
+		RestTemplate template = new RestTemplate();
 
-//		// Step1: first create a new employee
-//		springRestClient.createUser();
-//
-//		// Step 2: get new created employee from step1
-//		springRestClient.getEmployeeById();
-
-		// Step3: get all employees
-		springRestClient.getUsers();
-
-//		// Step4: Update employee with id = 1
-//		springRestClient.updateEmployee();
-//
-//		// Step5: Delete employee with id = 1
-//		springRestClient.deleteEmployee();
-	}
-
-	//ResponseEntity<String> forEntity = restTemplate.getForEntity("http://91.241.64.178:7081/api/users", String.class);
-	//forEntity.getHeaders().get("Set-Cookie").stream().forEach(System.out::println);
-
-	//User user = restTemplate.getForObject("http://graph.facebook.com/pivotalsoftware", User.class);
-
-
-	@Override
-	protected final SpringApplicationBuilder configure(final SpringApplicationBuilder application) {
-		return application.sources(SpringRestClient.class);
-	}
-
-	private void getUsers() {
+		ResponseEntity<String> responseEntity = template.getForEntity(
+				"http://91.241.64.178:7081/api/users", String.class);
+		List<String> cookies = responseEntity.getHeaders().get("Set-Cookie");
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		HttpEntity <String> entity = new HttpEntity <String> ("parameters", headers);
+		headers.set("Cookie",cookies.stream().collect(Collectors.joining(";")));
 
-		ResponseEntity <String> result = restTemplate.exchange(GET_USERS_ENDPOINT_URL, HttpMethod.GET, entity,
-				String.class);
+		System.out.println(cookies);
 
-		System.out.println(result);
+		User user = new User();
+		user.setId((long) 3);
+		user.setName("James");
+		user.setLastName("Brown");
+		user.setAge((byte) 10);
+
+		RequestEntity requestEntity = RequestEntity
+				.method(HttpMethod.POST,"http://91.241.64.178:7081/api/users")
+				.headers(headers)
+				.body(user);
+
+
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity entity = restTemplate.exchange(requestEntity, String.class);
+
+		System.out.println(entity.getBody());
+
+		user.setName("Thomas");
+		user.setLastName("Shelby");
+
+		requestEntity = RequestEntity
+				.method(HttpMethod.PUT,"http://91.241.64.178:7081/api/users")
+				.headers(headers)
+				.body(user);
+
+		entity = restTemplate.exchange(requestEntity, String.class);
+
+		System.out.println(entity.getBody());
+
+		requestEntity = RequestEntity
+				.method(HttpMethod.DELETE, "http://91.241.64.178:7081/api/users/3")
+				.headers(headers)
+				.body(user);
+
+		entity = restTemplate.exchange(requestEntity, String.class);
+
+		System.out.println(entity.getBody());
+
 	}
 
 
